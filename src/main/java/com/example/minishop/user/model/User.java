@@ -2,6 +2,7 @@ package com.example.minishop.user.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -15,13 +16,12 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @Column(nullable = false, updatable = false)
     private UUID id;
 
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(nullable = false)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
