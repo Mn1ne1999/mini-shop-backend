@@ -11,4 +11,6 @@ public interface ProductSearchRepository
     List<ProductDocument> findByNameContaining(String name);
 
     List<ProductDocument> findByCategoryName(String categoryName);
+    List<ProductDocument> findByNameContainingOrDescriptionContaining(String name, String description);
+
 }
