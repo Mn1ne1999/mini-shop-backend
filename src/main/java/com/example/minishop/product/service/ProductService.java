@@ -1,8 +1,8 @@
 package com.example.minishop.product.service;
 
+import com.example.minishop.product.dto.ProductCreateRequest;
 import com.example.minishop.product.mapper.ProductMapper;
 import com.example.minishop.product.model.Product;
-import com.example.minishop.product.model.ProductDocument;
 import com.example.minishop.product.repository.ProductRepository;
 import com.example.minishop.product.repository.ProductSearchRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,31 +17,34 @@ public class ProductService {
     private final ProductSearchRepository productSearchRepository;
 
     @Transactional
-    public Product create(Product product) {
-        Product saved = productRepository.save(product);
+    public Product create(ProductCreateRequest request) {
+        Product product = Product.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .price(request.getPrice())
+                .build();
 
-        ProductDocument document = ProductMapper.toDocument(saved);
-        productSearchRepository.save(document);
+        Product saved = productRepository.save(product);
+        productSearchRepository.save(ProductMapper.toDocument(saved));
 
         return saved;
     }
 
     @Transactional
-    public Product update(Long id, Product updatedProduct) {
+    public Product update(Long id, ProductCreateRequest request) {
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        existing.setName(updatedProduct.getName());
-        existing.setDescription(updatedProduct.getDescription());
-        existing.setPrice(updatedProduct.getPrice());
-        existing.setCategory(updatedProduct.getCategory());
+        existing.setName(request.getName());
+        existing.setDescription(request.getDescription());
+        existing.setPrice(request.getPrice());
 
         Product saved = productRepository.save(existing);
-
         productSearchRepository.save(ProductMapper.toDocument(saved));
 
         return saved;
     }
+
 
     @Transactional
     public void delete(Long id) {

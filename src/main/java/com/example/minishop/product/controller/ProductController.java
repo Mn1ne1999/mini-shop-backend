@@ -3,8 +3,6 @@ package com.example.minishop.product.controller;
 import com.example.minishop.product.dto.ProductCreateRequest;
 import com.example.minishop.product.dto.ProductResponse;
 import com.example.minishop.product.mapper.ProductDtoMapper;
-import com.example.minishop.product.model.Product;
-import com.example.minishop.product.model.ProductDocument;
 import com.example.minishop.product.service.ProductSearchService;
 import com.example.minishop.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -23,13 +21,9 @@ public class ProductController {
 
     @PostMapping
     public ProductResponse create(@RequestBody @Valid ProductCreateRequest request) {
-        Product product = Product.builder()
-                .name(request.getName())
-                .description(request.getDescription())
-                .price(request.getPrice())
-                .build();
-
-        return ProductDtoMapper.toResponse(productService.create(product));
+        return ProductDtoMapper.toResponse(
+                productService.create(request)
+        );
     }
 
     @PutMapping("/{id}")
@@ -37,13 +31,9 @@ public class ProductController {
             @PathVariable Long id,
             @RequestBody @Valid ProductCreateRequest request
     ) {
-        Product product = Product.builder()
-                .name(request.getName())
-                .description(request.getDescription())
-                .price(request.getPrice())
-                .build();
-
-        return ProductDtoMapper.toResponse(productService.update(id, product));
+        return ProductDtoMapper.toResponse(
+                productService.update(id, request)
+        );
     }
 
     @DeleteMapping("/{id}")
@@ -52,7 +42,10 @@ public class ProductController {
     }
 
     @GetMapping("/search")
-    public List<ProductDocument> search(@RequestParam String q) {
-        return productSearchService.search(q);
+    public List<ProductResponse> search(@RequestParam String q) {
+        return productSearchService.search(q).stream()
+                .map(ProductDtoMapper::fromDocument)
+                .toList();
     }
+
 }
