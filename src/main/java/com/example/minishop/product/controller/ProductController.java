@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -45,12 +46,29 @@ public class ProductController {
         productService.delete(id);
     }
 
-    // 🔓 публично
     @GetMapping("/search")
     public List<ProductResponse> search(@RequestParam String q) {
         return productSearchService.search(q).stream()
                 .map(ProductDtoMapper::fromDocument)
                 .toList();
     }
+
+    @GetMapping
+    public List<ProductResponse> list(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) BigDecimal priceFrom,
+            @RequestParam(required = false) BigDecimal priceTo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sort
+    ) {
+        return productSearchService
+                .search(q, category, priceFrom, priceTo, sort, page, size)
+                .stream()
+                .map(ProductDtoMapper::fromDocument)
+                .toList();
+    }
+
 
 }
