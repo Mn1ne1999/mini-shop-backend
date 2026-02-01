@@ -2,6 +2,9 @@ package com.example.minishop.order.service;
 
 import com.example.minishop.cart.dto.CartResponse;
 import com.example.minishop.cart.service.CartService;
+import com.example.minishop.common.exception.AccessDeniedException;
+import com.example.minishop.common.exception.NotFoundException;
+import com.example.minishop.common.exception.ValidationException;
 import com.example.minishop.order.dto.CheckoutResponse;
 import com.example.minishop.order.dto.OrderResponse;
 import com.example.minishop.order.mapper.OrderMapper;
@@ -58,7 +61,7 @@ public class OrderService {
         CartResponse cart = cartService.getCart();
 
         if (cart.getItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new ValidationException("Cart is empty");
         }
 
         Order order = Order.builder()
@@ -98,16 +101,16 @@ public class OrderService {
                 .getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new NotFoundException("Order not found"));
 
         boolean isAdmin = user.getRole() == Role.ADMIN;
         boolean isOwner = order.getUserId().equals(user.getId());
 
         if (!isAdmin && !isOwner) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("Access denied");
         }
 
         return OrderMapper.toResponse(order);

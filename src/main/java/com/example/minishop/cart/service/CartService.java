@@ -2,6 +2,7 @@ package com.example.minishop.cart.service;
 
 import com.example.minishop.cart.dto.CartItemDto;
 import com.example.minishop.cart.dto.CartResponse;
+import com.example.minishop.common.exception.NotFoundException;
 import com.example.minishop.product.model.Product;
 import com.example.minishop.product.repository.ProductRepository;
 import com.example.minishop.user.model.User;
@@ -37,7 +38,8 @@ public class CartService {
                 .getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
 
         return "cart:" + user.getId();
     }
@@ -51,7 +53,7 @@ public class CartService {
         }
 
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product not found"));
 
         String key = getCartKey();
 

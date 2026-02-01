@@ -2,6 +2,7 @@ package com.example.minishop.auth.service;
 
 import com.example.minishop.auth.dto.*;
 import com.example.minishop.auth.security.JwtService;
+import com.example.minishop.common.exception.ValidationException;
 import com.example.minishop.user.model.Role;
 import com.example.minishop.user.model.User;
 import com.example.minishop.user.repository.UserRepository;
@@ -19,7 +20,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new ValidationException("Email already exists");
         }
 
         User user = User.builder()
@@ -37,10 +38,11 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new ValidationException("Invalid credentials"));
+
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new ValidationException("Invalid credentials");
         }
 
         return AuthResponse.builder()

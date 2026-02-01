@@ -1,5 +1,6 @@
 package com.example.minishop.product.service;
 
+import com.example.minishop.common.exception.NotFoundException;
 import com.example.minishop.product.dto.ProductCreateRequest;
 import com.example.minishop.product.mapper.ProductMapper;
 import com.example.minishop.product.model.Product;
@@ -33,7 +34,8 @@ public class ProductService {
     @Transactional
     public Product update(Long id, ProductCreateRequest request) {
         Product existing = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product not found"));
+
 
         existing.setName(request.getName());
         existing.setDescription(request.getDescription());
