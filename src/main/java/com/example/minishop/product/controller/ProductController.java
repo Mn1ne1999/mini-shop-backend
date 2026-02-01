@@ -7,6 +7,7 @@ import com.example.minishop.product.service.ProductSearchService;
 import com.example.minishop.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class ProductController {
     private final ProductService productService;
     private final ProductSearchService productSearchService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ProductResponse create(@RequestBody @Valid ProductCreateRequest request) {
         return ProductDtoMapper.toResponse(
@@ -26,6 +28,7 @@ public class ProductController {
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ProductResponse update(
             @PathVariable Long id,
@@ -36,11 +39,13 @@ public class ProductController {
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         productService.delete(id);
     }
 
+    // 🔓 публично
     @GetMapping("/search")
     public List<ProductResponse> search(@RequestParam String q) {
         return productSearchService.search(q).stream()
