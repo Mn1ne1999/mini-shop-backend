@@ -7,12 +7,14 @@ import com.example.minishop.product.repository.ProductRepository;
 import com.example.minishop.user.model.User;
 import com.example.minishop.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -23,17 +25,30 @@ public class CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
+    @Value("${cart.ttl-days}")
+    private long cartTtlDays;
+
+    @Value("${cart.max-qty}")
+    private int maxQty;
+
     private String getCartKey() {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         return "cart:" + user.getId();
     }
+
     public void addItem(Long productId, int quantity) {
+
+        if (quantity < 1 || quantity > maxQty) {
+            throw new RuntimeException(
+                    "Quantity must be between 1 and " + maxQty
+            );
+        }
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -53,18 +68,33 @@ public class CartService {
                     .productName(product.getName())
                     .price(product.getPrice())
                     .quantity(quantity)
-                    .lineTotal(product.getPrice().multiply(BigDecimal.valueOf(quantity)))
+                    .lineTotal(
+                            product.getPrice()
+                                    .multiply(BigDecimal.valueOf(quantity))
+                    )
                     .build();
         } else {
             int newQty = item.getQuantity() + quantity;
+
+            if (newQty > maxQty) {
+                throw new RuntimeException(
+                        "Quantity must be <= " + maxQty
+                );
+            }
+
             item.setQuantity(newQty);
             item.setLineTotal(
-                    item.getPrice().multiply(BigDecimal.valueOf(newQty))
+                    item.getPrice()
+                            .multiply(BigDecimal.valueOf(newQty))
             );
         }
 
         ops.put(key, productKey, item);
 
+        redisTemplate.expire(
+                key,
+                Duration.ofDays(cartTtlDays)
+        );
     }
 
     public CartResponse getCart() {
@@ -75,6 +105,13 @@ public class CartService {
                 redisTemplate.opsForHash();
 
         List<CartItemDto> items = ops.values(key);
+
+        if (items == null || items.isEmpty()) {
+            return CartResponse.builder()
+                    .items(List.of())
+                    .totalAmount(BigDecimal.ZERO)
+                    .build();
+        }
 
         BigDecimal total = items.stream()
                 .map(CartItemDto::getLineTotal)
@@ -94,7 +131,4 @@ public class CartService {
     public void clearCart() {
         redisTemplate.delete(getCartKey());
     }
-
-
 }
-
