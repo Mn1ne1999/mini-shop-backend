@@ -12,18 +12,27 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('USER')")
 public class OrderController {
 
     private final OrderService orderService;
 
+    // USER и ADMIN — каждый увидит свои
     @GetMapping
     public List<OrderResponse> getMyOrders() {
         return orderService.getMyOrders();
     }
 
+    // ТОЛЬКО USER делает checkout
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/checkout")
     public CheckoutResponse checkout() {
         return orderService.checkout();
     }
+
+    // USER — свой заказ, ADMIN — любой
+    @GetMapping("/{id}")
+    public OrderResponse getOrder(@PathVariable Long id) {
+        return orderService.getOrderById(id);
+    }
 }
+

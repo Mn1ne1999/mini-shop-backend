@@ -9,6 +9,7 @@ import com.example.minishop.order.model.Order;
 import com.example.minishop.order.model.OrderItem;
 import com.example.minishop.order.model.OrderStatus;
 import com.example.minishop.order.repository.OrderRepository;
+import com.example.minishop.user.model.Role;
 import com.example.minishop.user.model.User;
 import com.example.minishop.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -89,4 +90,28 @@ public class OrderService {
                 .status(saved.getStatus())
                 .build();
     }
+
+    public OrderResponse getOrderById(Long orderId) {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isOwner = order.getUserId().equals(user.getId());
+
+        if (!isAdmin && !isOwner) {
+            throw new RuntimeException("Access denied");
+        }
+
+        return OrderMapper.toResponse(order);
+    }
+
+
 }
