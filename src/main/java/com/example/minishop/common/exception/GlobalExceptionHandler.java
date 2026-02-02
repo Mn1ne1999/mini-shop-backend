@@ -3,6 +3,7 @@ package com.example.minishop.common.exception;
 import com.example.minishop.common.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -88,4 +89,19 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
     }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ErrorResponse handleJsonParse(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request
+    ) {
+        return ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message("Invalid or missing JSON body")
+                .path(request.getRequestURI())
+                .build();
+    }
+
 }

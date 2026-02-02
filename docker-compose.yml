@@ -6,8 +6,8 @@ services:
     container_name: postgres
     environment:
       POSTGRES_DB: minishop
-      POSTGRES_USER: USER
-      POSTGRES_PASSWORD: PASSWORD
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Muhammad2323.
     ports:
       - "5432:5432"
 

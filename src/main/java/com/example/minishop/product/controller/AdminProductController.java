@@ -6,7 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/products")
+@RequestMapping("/api/v1/admin/products")
 @RequiredArgsConstructor
 public class AdminProductController {
 

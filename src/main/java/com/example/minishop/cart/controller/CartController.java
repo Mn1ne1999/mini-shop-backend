@@ -7,14 +7,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/cart")
+@RequestMapping("/api/v1/cart")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('USER')")
 public class CartController {
 
     private final CartService cartService;
 
-    @PostMapping("/{productId}")
+    @PostMapping("/items/{productId}")
     public void add(
             @PathVariable Long productId,
             @RequestParam int qty
@@ -27,12 +27,12 @@ public class CartController {
         return cartService.getCart();
     }
 
-    @DeleteMapping("/{productId}")
+    @DeleteMapping("/items/{productId}")
     public void remove(@PathVariable Long productId) {
         cartService.removeItem(productId);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/clear")
     public void clear() {
         cartService.clearCart();
     }
